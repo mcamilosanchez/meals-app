@@ -5,9 +5,16 @@ import 'package:meals/widgets/meal_item_trait.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class MealItem extends StatelessWidget {
-  const MealItem({super.key, required this.meal});
+  const MealItem({
+    super.key,
+    required this.meal,
+    required this.onSelectMeal,
+  });
 
   final Meal meal;
+  /* VIDEO #163. Adding Navigation to the MealDetails Screen */
+  final void Function(Meal meal) onSelectMeal;
+
   String get complexityText {
     /* VIDEO #162. Improving the MealItem Widget
     Hacemos un getter ya que complexity es un enum.
@@ -43,7 +50,10 @@ class MealItem extends StatelessWidget {
       clipBehavior: Clip.hardEdge,
       elevation: 2,
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          /* VIDEO #163. Adding Navigation to the MealDetails Screen */
+          onSelectMeal(meal);
+        },
         /* VIDEO #161. Introducing the Stack Widget
         Stack es un widget que se puede usar para colocar varios widgets uno 
         encima del otro, pero NO uno encima del otro, como lo hacíamos en Column

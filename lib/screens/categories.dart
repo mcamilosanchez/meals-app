@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:meals/data/dummy_data.dart';
 import 'package:meals/models/category.dart';
+import 'package:meals/models/meal.dart';
 import 'package:meals/screens/meals.dart';
 import 'package:meals/widgets/category_grid_item.dart';
 
 class CategoriesScreen extends StatelessWidget {
-  const CategoriesScreen({super.key});
+  const CategoriesScreen({
+    super.key,
+    required this.onToggleFavorite,
+  });
+
+  final void Function(Meal meal) onToggleFavorite;
 
   /* 159. Adding Cross-Screen Navigation
   Aquí estamos haciendo algo que no habíamos hecho antes: estamos añadiendo un 
@@ -35,6 +41,7 @@ class CategoriesScreen extends StatelessWidget {
         builder: (ctx) => MealsScreen(
           title: category.title,
           meals: filteredMeals,
+          onToggleFavorite: onToggleFavorite,
         ),
       ),
     );
@@ -45,27 +52,27 @@ class CategoriesScreen extends StatelessWidget {
     /* VIDEO #153. Using a GridView
     Cuando queremos implementar múltiples pantallas, es recomendable usar 
     Scaffold. */
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Pick your category'),
-      ),
-      body: GridView(
-        padding: const EdgeInsets.all(24),
-        /* VIDEO #153. Using a GridView
+    /* VIDEO #165. Adding Tab-based Navigation
+    Aquí anteriormente, había un Scaffold (después del return) pero lo 
+    eliminamos debido a que TabScreen (tabs.dart) ya estaba usando uno con 
+    AppBar */
+    return GridView(
+      padding: const EdgeInsets.all(24),
+      /* VIDEO #153. Using a GridView
         gridDelegate controla la disposición de los elementos. 
         SliverGridDelegateWithFixedCrossAxisCount establece el número de 
         columnas horizontales que deseo obtener. childAspectRatio define el 
         tamaño de los elementos del gridView */
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 3 / 2,
-          //Espacio horizontal entre las columnas
-          crossAxisSpacing: 20,
-          // Espacio vertical entre las columnas
-          mainAxisSpacing: 20,
-        ),
-        children: [
-          /* VIDEO #155. Displaying Category Items on a Screen
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 3 / 2,
+        //Espacio horizontal entre las columnas
+        crossAxisSpacing: 20,
+        // Espacio vertical entre las columnas
+        mainAxisSpacing: 20,
+      ),
+      children: [
+        /* VIDEO #155. Displaying Category Items on a Screen
           Realizamos un loop por medio de los elementos que se encuentran en 
           availableCategories y los estructuramos visualmente por medio de la 
           clase CategoryGridItem. Esta sería otra alternativa para de realizar 
@@ -73,15 +80,14 @@ class CategoriesScreen extends StatelessWidget {
           availableCategories.map(
             (category) => CategoryGridItem(category: category)
             ).toList() */
-          for (final category in availableCategories)
-            CategoryGridItem(
-              category: category,
-              onSelectedCategory: () {
-                _selectCategory(context, category);
-              },
-            ),
-        ],
-      ),
+        for (final category in availableCategories)
+          CategoryGridItem(
+            category: category,
+            onSelectedCategory: () {
+              _selectCategory(context, category);
+            },
+          ),
+      ],
     );
   }
 }
