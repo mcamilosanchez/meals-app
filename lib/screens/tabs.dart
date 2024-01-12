@@ -1,10 +1,23 @@
 /* VIDEO #165. Adding Tab-based Navigation
 The purpose of this screen is to show embedded screens */
 import 'package:flutter/material.dart';
+import 'package:meals/data/dummy_data.dart';
 import 'package:meals/models/meal.dart';
 import 'package:meals/screens/categories.dart';
+import 'package:meals/screens/filters.dart';
 import 'package:meals/screens/meals.dart';
 import 'package:meals/widgets/main_drawer.dart';
+
+/* VIDEO #175. Applying Filters
+Reordar la letra K, es para definir una variable global */
+const kInitialFilters = {
+  Filter.glutenFree: false,
+  Filter.lactoseFree: false,
+  Filter.vegetarian: false,
+  Filter.vegan: false,
+};
+
+final Map<Filter, bool> _savedFilters = {};
 
 class TabsScreen extends StatefulWidget {
   const TabsScreen({super.key});
@@ -20,6 +33,11 @@ class _TabsScreenState extends State<TabsScreen> {
   /* VIDEO #166. Passing Functions Through Multiple Layers of Widgets 
   (for State Management) */
   final List<Meal> _favoriteMeals = [];
+
+  /* VIDEO #175. Applying Filters
+  Aquí vamos a añadir una nueva variable donde almacenaremos los filtros 
+  seleccionados */
+  Map<Filter, bool> _selectedFilters = kInitialFilters;
 
   void _showInfoMessage(String message) {
     ScaffoldMessenger.of(context).clearSnackBars();
@@ -56,22 +74,85 @@ class _TabsScreenState extends State<TabsScreen> {
   }
 
   /* VIDEO #169. Closing the Drawer Manually */
-  void _setScreen(String identifier) {
+  /* VIDEO #174. Reading & Using Returned Data
+  Como se había mencionado en el video 173, al cerrar FiltersScreeen por medio 
+  de popScope, se está enviando información a ésta pantalla. Para leer o recibir
+  estos datos, debemos ir al lugar dónde llamamos Push. Este método push, en 
+  realidad devuelve un valor FUTURO, la obtenerlo se resuelven los datos 
+  devueltos por la pantalla que navegamos. Es importante recordar que al momento
+  de hacer un push en esta pila de pantallas, NO OBTENEMOS INMEDIATAMENTE de 
+  vuelta esos datos ya que el usuario puede interactuar con esa pantalla y 
+  pulsar el botón de retroceso al cabo de 10 seg o más, por eso se llama 
+  FUTURO ya que no disponemos inmediatamente el valor de retorno. Por lo 
+  anterior, añadimos ASYNC en el método y AWAIT*/
+  void _setScreen(String identifier) async {
+    /* VIDEO #171. Replacing Screens (Instead of Pushing) 
+    En este caso, es importante tener en cuenta que aquí vamos a mostrar 
+    TabsScreen y debemos tener en cuenta que ya estamos ubicados en dicha 
+    pantalla. Por lo cual si accedemos al drawer y damos clic en algunas de las 
+    dos opciones (MEALS or FILTERS), DEBEMOS cerrar el drawer.*/
+    Navigator.of(context).pop();
     if (identifier == 'filters') {
-    } else {
-      /* VIDEO #169. Closing the Drawer Manually
-      En este caso, es importante tener en cuenta que aquí vamos a mostrar 
-      TabsScreen y debemos tener en cuenta que ya estamos ubicados en dicha 
-      pantalla. Por lo cual si accedemos al drawer y damos clic a Meals, DEBEMOS 
-      cerrar el drawer*/
-      Navigator.of(context).pop();
+      /* VIDEO #171. Replacing Screens (Instead of Pushing) 
+      Al realizar la navegación de esta manera estaremos acumulando una pila de 
+      screens. Para solucionar eso, en ves de usar push, usaremos 
+      pushReplacement. Al implementarlo, estamos diciendo que FiltersScreen no 
+      será empujado (push), sino que será reemplazado por TabsScreen. Por lo 
+      tanto el BOTON DE RETROCESO no funcionaría porque no hay ningún lugar para
+      volver*/
+      /* VIDEO #174. Reading & Using Returned Data
+      Aquí explican el uso de await */
+
+      final result = await Navigator.of(context).push<Map<Filter, bool>>(
+        MaterialPageRoute(
+          builder: (ctx) => FiltersScreen(
+            currentFilters: _selectedFilters,
+          ),
+        ),
+      );
+      /* VIDEO #174. Reading & Using Returned Data
+      Aquí, result estará disponible y se establecerá los datos devueltos, En 
+      push, podemos definir que tipo de valor será devuelto por medio de < >*/
+
+      /* VIDEO #175. Applying Filters
+      Almcenar los filtros de esta manera no es suficiente ya que debemos 
+      asegurarnos de que el build se ejecute de nuevo, para que los filtros 
+      actualizados o lista de comidas disponibles se pase a la pantalla. No a la
+      pantalla MealsScreen sino a CategoriesScreen, ya que así está la lógica.*/
+
+      /* El operador ?? comprueba si el valor delante de él es NULO y si es así,
+      se utilizará el valor de reserva definido después de los signos de 
+      interrogación. Es decir, este operador permite establecer un valor de 
+      retorno condicional en caso de sea nulo */
+      setState(() {
+        _selectedFilters = result ?? kInitialFilters;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    /* VIDEO #175. Applying Filters
+    Aquí estamos cargando la nueva lista con los filtros aplicados */
+    final availableMeals = dummyMeals.where((meal) {
+      if (_selectedFilters[Filter.glutenFree]! && !meal.isGlutenFree) {
+        return false;
+      }
+      if (_selectedFilters[Filter.lactoseFree]! && !meal.isLactoseFree) {
+        return false;
+      }
+      if (_selectedFilters[Filter.vegetarian]! && !meal.isVegetarian) {
+        return false;
+      }
+      if (_selectedFilters[Filter.vegan]! && !meal.isVegan) {
+        return false;
+      }
+      return true;
+    }).toList();
+
     Widget activePage = CategoriesScreen(
       onToggleFavorite: _toggleMealFavoriteStatus,
+      availableMeals: availableMeals,
     );
     var activePageTitle = 'Categories';
 

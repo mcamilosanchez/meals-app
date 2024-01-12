@@ -9,9 +9,13 @@ class CategoriesScreen extends StatelessWidget {
   const CategoriesScreen({
     super.key,
     required this.onToggleFavorite,
+    required this.availableMeals,
   });
 
   final void Function(Meal meal) onToggleFavorite;
+  /* VIDEO #175. Applying Filters 
+  Aquí vamos a crear la lista de la comidas filtradas */
+  final List<Meal> availableMeals;
 
   /* 159. Adding Cross-Screen Navigation
   Aquí estamos haciendo algo que no habíamos hecho antes: estamos añadiendo un 
@@ -23,7 +27,7 @@ class CategoriesScreen extends StatelessWidget {
     Estamos creando una lista filtrada, dónde _selectCategory necesitará otro 
     argumento "category" ya que se necesita saber qué categoria se seleccionó. 
     Caso de no entender, ver el video*/
-    final filteredMeals = dummyMeals
+    final filteredMeals = availableMeals
         .where((meal) => meal.categories.contains(category.id))
         .toList();
     /* 159. Adding Cross-Screen Navigation
