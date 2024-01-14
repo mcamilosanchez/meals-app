@@ -13,7 +13,7 @@ class MealsScreen extends StatelessWidget {
     Hacemos title NO sea requerido debido al condicional (VER COMENTARIO 77) */
     this.title,
     required this.meals,
-    required this.onToggleFavorite,
+    //required this.onToggleFavorite,
   });
 
   /* VIDEO #165. Adding Tab-based Navigation
@@ -22,7 +22,7 @@ class MealsScreen extends StatelessWidget {
   final List<Meal> meals;
   /* VIDEO #166. Passing Functions Through Multiple Layers of Widgets 
   (for State Management): */
-  final void Function(Meal meal) onToggleFavorite;
+  //final void Function(Meal meal) onToggleFavorite;
 
   void selectMeal(BuildContext context, Meal meal) {
     Navigator.of(context).push(
@@ -33,7 +33,7 @@ class MealsScreen extends StatelessWidget {
           (for State Management): Estamos pasando una función a múltiples 
           widgets, se hace así por el momento. Más adelante, se aplicará un 
           mejor método */
-          onToggleFavorite: onToggleFavorite,
+          //onToggleFavorite: onToggleFavorite,
         ),
       ),
     );

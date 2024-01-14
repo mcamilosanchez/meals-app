@@ -8,11 +8,11 @@ import 'package:meals/widgets/category_grid_item.dart';
 class CategoriesScreen extends StatelessWidget {
   const CategoriesScreen({
     super.key,
-    required this.onToggleFavorite,
+    //required this.onToggleFavorite,
     required this.availableMeals,
   });
 
-  final void Function(Meal meal) onToggleFavorite;
+  //final void Function(Meal meal) onToggleFavorite;
   /* VIDEO #175. Applying Filters 
   Aquí vamos a crear la lista de la comidas filtradas */
   final List<Meal> availableMeals;
@@ -45,7 +45,7 @@ class CategoriesScreen extends StatelessWidget {
         builder: (ctx) => MealsScreen(
           title: category.title,
           meals: filteredMeals,
-          onToggleFavorite: onToggleFavorite,
+          //onToggleFavorite: onToggleFavorite,
         ),
       ),
     );

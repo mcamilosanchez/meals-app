@@ -1,8 +1,9 @@
 /* VIDEO #165. Adding Tab-based Navigation
 The purpose of this screen is to show embedded screens */
 import 'package:flutter/material.dart';
-import 'package:meals/data/dummy_data.dart';
-import 'package:meals/models/meal.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meals/providers/favorites_provider.dart';
+import 'package:meals/providers/meals_provider.dart';
 import 'package:meals/screens/categories.dart';
 import 'package:meals/screens/filters.dart';
 import 'package:meals/screens/meals.dart';
@@ -17,55 +18,51 @@ const kInitialFilters = {
   Filter.vegan: false,
 };
 
-final Map<Filter, bool> _savedFilters = {};
-
-class TabsScreen extends StatefulWidget {
+/* VIDEO #183. Using a Provider
+Tenemos que cambiar StatefulWidget a ConsumerStatefulWidget, si fuese 
+StatelessWidget se cambiaría de manera diferente, por CosumerWidget*/
+class TabsScreen extends ConsumerStatefulWidget {
   const TabsScreen({super.key});
 
   @override
-  State<TabsScreen> createState() {
+  ConsumerState<TabsScreen> createState() {
     return _TabsScreenState();
   }
 }
 
-class _TabsScreenState extends State<TabsScreen> {
+class _TabsScreenState extends ConsumerState<TabsScreen> {
   int _selectedPageIndex = 0;
   /* VIDEO #166. Passing Functions Through Multiple Layers of Widgets 
   (for State Management) */
-  final List<Meal> _favoriteMeals = [];
+  //final List<Meal> _favoriteMeals = [];
 
   /* VIDEO #175. Applying Filters
   Aquí vamos a añadir una nueva variable donde almacenaremos los filtros 
   seleccionados */
   Map<Filter, bool> _selectedFilters = kInitialFilters;
 
-  void _showInfoMessage(String message) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-      ),
-    );
-  }
+  /* VIDEO #185. Using the FavoritesProvider
+  Podemos deshacernos de este código, ya que no estamos manejando la lista 
+  _favoriteMeals gracias a Provider*/
 
-  void _toggleMealFavoriteStatus(Meal meal) {
-    /*  Aquí, se verifica si el objeto meal está presente en la lista 
-    _favoriteMeals. Caso contrario, returna FALSE*/
-    final isExisting = _favoriteMeals.contains(meal);
+  // void _toggleMealFavoriteStatus(Meal meal) {
+  //   /*  Aquí, se verifica si el objeto meal está presente en la lista
+  //   _favoriteMeals. Caso contrario, returna FALSE*/
+  //   final isExisting = _favoriteMeals.contains(meal);
 
-    if (isExisting) {
-      /* Si es TRUE tenemos que remover la comida */
-      setState(() {
-        _favoriteMeals.remove(meal);
-      });
-      _showInfoMessage('Meal is no longer a favorite');
-    } else {
-      setState(() {
-        _favoriteMeals.add(meal);
-      });
-      _showInfoMessage('Marked as favorite!');
-    }
-  }
+  //   if (isExisting) {
+  //     /* Si es TRUE tenemos que remover la comida */
+  //     setState(() {
+  //       _favoriteMeals.remove(meal);
+  //     });
+  //     _showInfoMessage('Meal is no longer a favorite');
+  //   } else {
+  //     setState(() {
+  //       _favoriteMeals.add(meal);
+  //     });
+  //     _showInfoMessage('Marked as favorite!');
+  //   }
+  // }
 
   void _selectPage(int index) {
     setState(() {
@@ -132,9 +129,21 @@ class _TabsScreenState extends State<TabsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    /* VIDEO #183. Using a Provider
+    El objetivo es obtener las comidas (availableMeals) de Provider. Para eso 
+    tenemos una nueva propiedad: ref. Lo que podemos hacer con ref es utilizar 
+    métodos de utilidad, los más importantes son: read (obtener datos de nuestro
+    Provider), watch (configurar un oyente que asegura de que el build se 
+    ejecuta de nuevo cuando nuestros datos cambian). La documentación de 
+    Riverpot, recomienda utilizar watch tan a menudo como sea posible, incluso 
+    si necesita leer los datos una vez.
+    Al escribrir ref.watch(mealsProvider) configuramos un listener que 
+    re-ejecutará el build cada vez que mealsProvider cambie.
+    Además con este listener, watch devuelve los datos del Provider que vigila. */
+    final meals = ref.watch(mealsProvider);
     /* VIDEO #175. Applying Filters
-    Aquí estamos cargando la nueva lista con los filtros aplicados */
-    final availableMeals = dummyMeals.where((meal) {
+    Aquí estamos cargando la nueva lista con los filtros aplicados. */
+    final availableMeals = meals.where((meal) {
       if (_selectedFilters[Filter.glutenFree]! && !meal.isGlutenFree) {
         return false;
       }
@@ -151,15 +160,17 @@ class _TabsScreenState extends State<TabsScreen> {
     }).toList();
 
     Widget activePage = CategoriesScreen(
-      onToggleFavorite: _toggleMealFavoriteStatus,
+      // onToggleFavorite: _toggleMealFavoriteStatus,
       availableMeals: availableMeals,
     );
     var activePageTitle = 'Categories';
 
     if (_selectedPageIndex == 1) {
+      /* VIDEO #185. Using the FavoritesProvider */
+      final favoriteMeals = ref.watch(favoriteMealsProvider);
       activePage = MealsScreen(
-        meals: _favoriteMeals,
-        onToggleFavorite: _toggleMealFavoriteStatus,
+        meals: favoriteMeals,
+        // onToggleFavorite: _toggleMealFavoriteStatus,
       );
       activePageTitle = 'Favorites';
     }
