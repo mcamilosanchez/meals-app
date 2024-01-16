@@ -1,29 +1,34 @@
 /* VIDEO #170. Adding a Filter Item */
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meals/providers/filters_provider.dart';
 // import 'package:meals/screens/tabs.dart';
 // import 'package:meals/widgets/main_drawer.dart';
 
 /* VIDEO #VIDEO #173. Returning Data When Leaving a Screen */
-enum Filter {
-  glutenFree,
-  lactoseFree,
-  vegetarian,
-  vegan,
-}
+// enum Filter {
+//   glutenFree,
+//   lactoseFree,
+//   vegetarian,
+//   vegan,
+// }
 
-class FiltersScreen extends StatefulWidget {
-  const FiltersScreen({super.key, required this.currentFilters});
+class FiltersScreen extends ConsumerStatefulWidget {
+  const FiltersScreen({
+    super.key,
+    /*required this.currentFilters*/
+  });
 
   /* VIDEO #175. Applying Filters */
-  final Map<Filter, bool> currentFilters;
+  //final Map<Filter, bool> currentFilters;
 
   @override
-  State<FiltersScreen> createState() {
+  ConsumerState<FiltersScreen> createState() {
     return _FiltersScreenState();
   }
 }
 
-class _FiltersScreenState extends State<FiltersScreen> {
+class _FiltersScreenState extends ConsumerState<FiltersScreen> {
   /* VIDEO #170. Adding a Filter Item
   Cuando el switch cambie, la UI debe cambiar, pot lo cual empleamos setState*/
   var _glutenFreeFilterSet = false;
@@ -44,10 +49,15 @@ class _FiltersScreenState extends State<FiltersScreen> {
     super.initState();
     /* No hay necesidad de llamar de nuevo setState ya que initState se 
     ejecutará antes del método Build */
-    _glutenFreeFilterSet = widget.currentFilters[Filter.glutenFree]!;
-    _lactoseFreeFilterSet = widget.currentFilters[Filter.lactoseFree]!;
-    _vegetarianFilterSet = widget.currentFilters[Filter.vegetarian]!;
-    _veganFilterSet = widget.currentFilters[Filter.vegan]!;
+    /* VIDEO #188. Combining Local & Provider-managed State
+    Aquí voy a realizar un read, es decir, se utiliza para obtener el valor 
+    actual almacenado en el proveedor filtersProvider y dichos valores, se 
+    asignan a los filtros locales*/
+    final activeFilters = ref.read(filtersProvider);
+    _glutenFreeFilterSet = activeFilters[Filter.glutenFree]!;
+    _lactoseFreeFilterSet = activeFilters[Filter.lactoseFree]!;
+    _vegetarianFilterSet = activeFilters[Filter.vegetarian]!;
+    _veganFilterSet = activeFilters[Filter.vegan]!;
   }
 
   @override
@@ -91,13 +101,22 @@ class _FiltersScreenState extends State<FiltersScreen> {
           configuración que podemos usar, y es pasar parámetros cuando ésta se 
           cierra y la pantalla que los recibe, sería TabsScreen. Los cuales, 
           serán los ENUM que declaramos al inicio*/
-          Navigator.of(context).pop({
+
+          /* VIDEO #188. Combining Local & Provider-managed State
+          Recordar que al momento de cerrar FiltersScreen se envía la 
+          información de los filtros a TabsScreen. Por lo anterior, queremos 
+          llegar a nuestro Provider mediante ref:
+          Escribimos el notifier ya que en esta clase, tiene el método setFilter
+          y en lugar de pasarlo a pop, lo pasamos a setFilters para ACTUALIZAR 
+          nuestros filtros */
+          ref.read(filtersProvider.notifier).setFilters({
             Filter.glutenFree: _glutenFreeFilterSet,
             Filter.lactoseFree: _lactoseFreeFilterSet,
             Filter.vegetarian: _vegetarianFilterSet,
             Filter.vegan: _veganFilterSet,
           });
-          return false; /*Se confirma o se niega si queremos navegar de vuelta, 
+          //Navigator.of(context).pop();
+          return true; /*Se confirma o se niega si queremos navegar de vuelta, 
           será false ya que no queremos apareces dos veces en la pantalla porque
           si lo hacemos, cerraríamos nuestra pantalla*/
         },

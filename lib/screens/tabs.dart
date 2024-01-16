@@ -7,6 +7,7 @@ import 'package:meals/providers/meals_provider.dart';
 import 'package:meals/screens/categories.dart';
 import 'package:meals/screens/filters.dart';
 import 'package:meals/screens/meals.dart';
+import 'package:meals/providers/filters_provider.dart';
 import 'package:meals/widgets/main_drawer.dart';
 
 /* VIDEO #175. Applying Filters
@@ -39,7 +40,7 @@ class _TabsScreenState extends ConsumerState<TabsScreen> {
   /* VIDEO #175. Applying Filters
   Aquí vamos a añadir una nueva variable donde almacenaremos los filtros 
   seleccionados */
-  Map<Filter, bool> _selectedFilters = kInitialFilters;
+  //Map<Filter, bool> _selectedFilters = kInitialFilters;
 
   /* VIDEO #185. Using the FavoritesProvider
   Podemos deshacernos de este código, ya que no estamos manejando la lista 
@@ -100,11 +101,11 @@ class _TabsScreenState extends ConsumerState<TabsScreen> {
       /* VIDEO #174. Reading & Using Returned Data
       Aquí explican el uso de await */
 
-      final result = await Navigator.of(context).push<Map<Filter, bool>>(
+      await Navigator.of(context).push<Map<Filter, bool>>(
         MaterialPageRoute(
-          builder: (ctx) => FiltersScreen(
-            currentFilters: _selectedFilters,
-          ),
+          builder: (ctx) => const FiltersScreen(
+              //currentFilters: _selectedFilters,
+              ),
         ),
       );
       /* VIDEO #174. Reading & Using Returned Data
@@ -112,7 +113,7 @@ class _TabsScreenState extends ConsumerState<TabsScreen> {
       push, podemos definir que tipo de valor será devuelto por medio de < >*/
 
       /* VIDEO #175. Applying Filters
-      Almcenar los filtros de esta manera no es suficiente ya que debemos 
+      Almacenar los filtros de esta manera no es suficiente ya que debemos 
       asegurarnos de que el build se ejecute de nuevo, para que los filtros 
       actualizados o lista de comidas disponibles se pase a la pantalla. No a la
       pantalla MealsScreen sino a CategoriesScreen, ya que así está la lógica.*/
@@ -121,9 +122,9 @@ class _TabsScreenState extends ConsumerState<TabsScreen> {
       se utilizará el valor de reserva definido después de los signos de 
       interrogación. Es decir, este operador permite establecer un valor de 
       retorno condicional en caso de sea nulo */
-      setState(() {
-        _selectedFilters = result ?? kInitialFilters;
-      });
+      // setState(() {
+      //   _selectedFilters = result ?? kInitialFilters;
+      // });
     }
   }
 
@@ -143,17 +144,22 @@ class _TabsScreenState extends ConsumerState<TabsScreen> {
     final meals = ref.watch(mealsProvider);
     /* VIDEO #175. Applying Filters
     Aquí estamos cargando la nueva lista con los filtros aplicados. */
+
+    /* 188. Combining Local & Provider-managed State
+    Recordar que watch configura un oyente (listener) que asegura de que el 
+    build se ejecuta de nuevo cuando nuestros datos cambian. */
+    final activeFilters = ref.watch(filtersProvider);
     final availableMeals = meals.where((meal) {
-      if (_selectedFilters[Filter.glutenFree]! && !meal.isGlutenFree) {
+      if (activeFilters[Filter.glutenFree]! && !meal.isGlutenFree) {
         return false;
       }
-      if (_selectedFilters[Filter.lactoseFree]! && !meal.isLactoseFree) {
+      if (activeFilters[Filter.lactoseFree]! && !meal.isLactoseFree) {
         return false;
       }
-      if (_selectedFilters[Filter.vegetarian]! && !meal.isVegetarian) {
+      if (activeFilters[Filter.vegetarian]! && !meal.isVegetarian) {
         return false;
       }
-      if (_selectedFilters[Filter.vegan]! && !meal.isVegan) {
+      if (activeFilters[Filter.vegan]! && !meal.isVegan) {
         return false;
       }
       return true;
