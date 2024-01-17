@@ -1,5 +1,6 @@
 /* 187. Getting Started with Another Provider */
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meals/providers/meals_provider.dart';
 
 /* No te rindas Sánchez, tu puedes hacerlo!!! */
 
@@ -65,3 +66,31 @@ final filtersProvider =
     StateNotifierProvider<FiltersNotifier, Map<Filter, bool>>(
   (ref) => FiltersNotifier(),
 );
+
+/* 190. Connecting Multiple Providers With Each Other (Dependent Providers)
+Vamos a crear otro Provider que gestionará las comidas filtradas. Para ésto, 
+será un simple proveedor, ya que no se creará una nueva clase de FiltersNotifier 
+como en filtersProvider. Es decir, un provider estándar. */
+final filteredMealsProvider = Provider((ref) {
+  /* Ahora, éste filteredMealsProvider depende de filtersProvider, ya que se 
+    está implementando activeFilters. La forma de conectarlos es usando ref: */
+
+  final meals = ref.watch(mealsProvider);
+  final activeFilters = ref.watch(filtersProvider);
+
+  return meals.where((meal) {
+    if (activeFilters[Filter.glutenFree]! && !meal.isGlutenFree) {
+      return false;
+    }
+    if (activeFilters[Filter.lactoseFree]! && !meal.isLactoseFree) {
+      return false;
+    }
+    if (activeFilters[Filter.vegetarian]! && !meal.isVegetarian) {
+      return false;
+    }
+    if (activeFilters[Filter.vegan]! && !meal.isVegan) {
+      return false;
+    }
+    return true;
+  }).toList();
+});

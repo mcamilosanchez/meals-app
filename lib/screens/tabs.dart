@@ -3,7 +3,6 @@ The purpose of this screen is to show embedded screens */
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meals/providers/favorites_provider.dart';
-import 'package:meals/providers/meals_provider.dart';
 import 'package:meals/screens/categories.dart';
 import 'package:meals/screens/filters.dart';
 import 'package:meals/screens/meals.dart';
@@ -141,29 +140,15 @@ class _TabsScreenState extends ConsumerState<TabsScreen> {
     Al escribrir ref.watch(mealsProvider) configuramos un listener que 
     re-ejecutará el build cada vez que mealsProvider cambie.
     Además con este listener, watch devuelve los datos del Provider que vigila. */
-    final meals = ref.watch(mealsProvider);
+    //final meals = ref.watch(mealsProvider);
     /* VIDEO #175. Applying Filters
     Aquí estamos cargando la nueva lista con los filtros aplicados. */
 
     /* 188. Combining Local & Provider-managed State
     Recordar que watch configura un oyente (listener) que asegura de que el 
     build se ejecuta de nuevo cuando nuestros datos cambian. */
-    final activeFilters = ref.watch(filtersProvider);
-    final availableMeals = meals.where((meal) {
-      if (activeFilters[Filter.glutenFree]! && !meal.isGlutenFree) {
-        return false;
-      }
-      if (activeFilters[Filter.lactoseFree]! && !meal.isLactoseFree) {
-        return false;
-      }
-      if (activeFilters[Filter.vegetarian]! && !meal.isVegetarian) {
-        return false;
-      }
-      if (activeFilters[Filter.vegan]! && !meal.isVegan) {
-        return false;
-      }
-      return true;
-    }).toList();
+    //final activeFilters = ref.watch(filtersProvider);
+    final availableMeals = ref.watch(filteredMealsProvider);
 
     Widget activePage = CategoriesScreen(
       // onToggleFavorite: _toggleMealFavoriteStatus,
